@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alzheimer Detection - AlexNet Deep Learning</title>
+    <title>Alzheimer Detection - AlexNet Deep Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .model-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 50px 30px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-section:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        
+        .upload-label {
+            cursor: pointer;
+            display: block;
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .selected-file {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            color: #2e7d32;
+            display: none;
+        }
+        
+        .btn-predict {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+        
+        .btn-predict:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .result-header {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .prediction {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .prediction-class {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .prediction-confidence {
+            font-size: 2em;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        
+        .prediction-description {
+            color: #555;
+            font-size: 1.1em;
+            margin-top: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .probabilities {
+            margin-top: 20px;
+        }
+        
+        .prob-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .prob-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .prob-label {
+            flex: 1;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .prob-bar-container {
+            flex: 2;
+            background: #e0e0e0;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+        
+        .prob-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .prob-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .error-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            border-radius: 10px;
+        }
+        
+        .error-title {
+            color: #e65100;
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            color: #bf360c;
+            line-height: 1.6;
+        }
+        
+        .info-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 12px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .info-label {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9em;
+            background: #f8f9fa;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .prediction {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .prediction-confidence {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Alzheimer Detection System</h1>
+            <p>Advanced Deep Learning Classification using AlexNet</p>
+            {% if model_loaded %}
+            <div class="model-badge">✓ Model Loaded{% if model_info.val_accuracy %} | Accuracy: {{ "%.2f" | format(model_info.val_accuracy) }}%{% endif %}</div>
+            {% else %}
+            <div class="model-badge" style="background: rgba(255,0,0,0.3);">⚠ Model Not Available</div>
+            {% endif %}
+        </div>
+        
+        <div class="content">
+            <form method="post" action="/predict" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-section" onclick="document.getElementById('fileInput').click()">
+                    <label for="fileInput" class="upload-label">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">Click to Upload MRI Image</div>
+                        <div class="upload-hint">Supports JPG, PNG, and other image formats</div>
+                    </label>
+                    <input type="file" name="file" id="fileInput" accept="image/*" required>
+                </div>
+                
+                <div class="selected-file" id="selectedFile"></div>
+                
+                <button type="submit" class="btn-predict" id="predictBtn" {% if not model_loaded %}disabled{% endif %}>
+                    🔮 Analyze Image
+                </button>
+            </form>
+            
+            {% if result %}
+            <div class="result-section">
+                <div class="result-header">📊 Analysis Results</div>
+                
+                <div class="prediction">
+                    <div>
+                        <div style="color: #888; font-size: 0.9em; margin-bottom: 5px;">DIAGNOSIS</div>
+                        <div class="prediction-class">{{ result.class }}</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-size: 0.9em; margin-bottom: 5px; text-align: right;">CONFIDENCE</div>
+                        <div class="prediction-confidence">{{ result.confidence }}</div>
+                    </div>
+                </div>
+                
+                <div class="prediction-description">
+                    📋 <strong>Description:</strong> {{ result.description }}
+                </div>
+                
+                {% if result.all_probabilities %}
+                <div class="probabilities">
+                    <div class="prob-title">📈 Detailed Class Probabilities</div>
+                    {% for class_name, prob in result.all_probabilities.items() %}
+                    <div class="prob-item">
+                        <div class="prob-label">{{ class_name }}</div>
+                        <div class="prob-bar-container">
+                            <div class="prob-bar" style="width: {{ prob.replace('%', '') }}%">
+                                {% if prob.replace('%', '')|float > 10 %}{{ prob }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="prob-value">{{ prob }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="info-section">
+                    <div style="font-weight: 600; color: #555; margin-bottom: 10px;">📁 Image Information</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Filename</div>
+                            <div class="info-value">{{ result.filename }}</div>
+                        </div>
+                        {% if result.image_info %}
+                        <div class="info-item">
+                            <div class="info-label">Dimensions</div>
+                            <div class="info-value">{{ result.image_info.size }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Format</div>
+                            <div class="info-value">{{ result.image_info.mode }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if error %}
+            <div class="error-section">
+                <div class="error-title">⚠️ Error Occurred</div>
+                <div class="error-message">{{ error }}</div>
+            </div>
+            {% endif %}
+            
+            <div class="info-section" style="margin-top: 30px;">
+                <div style="font-weight: 600; color: #555; margin-bottom: 10px;">ℹ️ About This Model</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Architecture</div>
+                        <div class="info-value">AlexNet</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Input Size</div>
+                        <div class="info-value">200×190</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Classes</div>
+                        <div class="info-value">4</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Framework</div>
+                        <div class="info-value">PyTorch</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🔬 Alzheimer Detection System | Powered by Deep Learning</p>
+            <p style="margin-top: 5px; font-size: 0.85em;">For research and educational purposes only</p>
+        </div>
+    </div>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const uploadForm = document.getElementById('uploadForm');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const fileName = this.files[0].name;
+                const fileSize = (this.files[0].size / 1024).toFixed(2);
+                selectedFile.innerHTML = `✓ Selected: <strong>${fileName}</strong> (${fileSize} KB)`;
+                selectedFile.style.display = 'block';
+            }
+        });
+        
+        uploadForm.addEventListener('submit', function(e) {
+            const btn = document.getElementById('predictBtn');
+            btn.innerHTML = '⏳ Analyzing...';
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>
