@@ -48,8 +48,6 @@ htmlcov/
 *.iml
 
 
-data/
-Data/
 datasets/
 raw_data/
 processed_data/
